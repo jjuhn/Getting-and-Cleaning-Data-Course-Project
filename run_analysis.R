@@ -69,6 +69,7 @@ test_activity <- getDataFrame(extData, "activity", unzippedFiles, test = TRUE)
 train_features <- getDataFrame(extData, "features", unzippedFiles)
 test_features <- getDataFrame(extData, "features", unzippedFiles, test = TRUE)
 
+# 1. Merges the training and the test sets to create one data set.
 # row binding train and test data. to form giant long data.
 # 2947 + 7352 = 10299
 subject <- combine_train_test(train_subject, test_subject)
@@ -84,11 +85,12 @@ colnames(features) <- feature_name$V2
 # column bind all the dataframes to get the giant data. 
 data <- cbind(features, cbind(subject, activity))
 
-# extracting measurements on the mean and standard deviation.
+# 2. Extracts only the measurements on the mean and standard deviation for each measurement.
+# \\ is the escape character for regex.
 data <- subset(data, select=c(as.character(feature_name$V2[grep("mean\\(\\)|std\\(\\)", feature_name$V2)])
 , "subject", "activity"))
 
-
+# 3. Uses descriptive activity names to name the activities in the data set
 # labelling activity column using activity_labels.txt
 # 1 WALKING
 # 2 WALKING_UPSTAIRS
@@ -99,7 +101,22 @@ data <- subset(data, select=c(as.character(feature_name$V2[grep("mean\\(\\)|std\
 activity_name <- getActivityName(extData, unzippedFiles)
 data$activity <- factor(data$activity, levels= activity_name$V1, labels = activity_name$V2)
 
+# 4. Appropriately labels the data set with descriptive variable names.
+# this is going to be little bit tedious...
+# anything starts with t = time
+# anything starts with f = frequency
+# Acc, gyro, Mag I think it is very self explanatory but I will change them anyways. 
 
+colnames(data) <- gsub("^t", "time", colnames(data))
+colnames(data) <- gsub("^f", "frequency", colnames(data))
+colnames(data) <- gsub("Acc", "Accelerometer", colnames(data))
+colnames(data) <- gsub("Gyro", "Gyroscope", colnames(data))
+colnames(data) <- gsub("Mag", "Magnitude", colnames(data))
+# there were some frequencies with bodybody in it. 
+colnames(data) <- gsub("BodyBody", "Body", colnames(data))
+
+# 5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+# aggregate function needed.
 
 
 
