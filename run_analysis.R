@@ -42,17 +42,21 @@ getDataFrame <- function(extData, name, unzippedFiles, test=FALSE){
   return (read.table(file.path(extData, unzippedFiles[grep(search, unzippedFiles)]), header=FALSE))
 }
 
+# row binding train and test sets. I could have not made this function...
 combine_train_test <- function(train, test){
   return (rbind(train, test))
 }
 
+# get feature names from features.txt
 getFeaturesName <- function(extData, unzippedFiles){
   return (read.table(file.path(extData, unzippedFiles[grep("/features.txt", unzippedFiles)]), header=FALSE))
 }
 
+#get acvitivy names from activity_label.txt
 getActivityName <- function(extData, unzippedFiles){
   return(read.table(file.path(extData, unzippedFiles[grep("/activity_labels.txt", unzippedFiles)]), header=FALSE))
 }
+
 # Download zip files from given url. 
 downloadZip(dataUrl, zipFile)
 
@@ -90,6 +94,7 @@ data <- cbind(features, cbind(subject, activity))
 data <- subset(data, select=c(as.character(feature_name$V2[grep("mean\\(\\)|std\\(\\)", feature_name$V2)])
 , "subject", "activity"))
 
+
 # 3. Uses descriptive activity names to name the activities in the data set
 # labelling activity column using activity_labels.txt
 # 1 WALKING
@@ -100,6 +105,7 @@ data <- subset(data, select=c(as.character(feature_name$V2[grep("mean\\(\\)|std\
 # 6 LAYING
 activity_name <- getActivityName(extData, unzippedFiles)
 data$activity <- factor(data$activity, levels= activity_name$V1, labels = activity_name$V2)
+
 
 # 4. Appropriately labels the data set with descriptive variable names.
 # this is going to be little bit tedious...
@@ -115,9 +121,11 @@ colnames(data) <- gsub("Mag", "Magnitude", colnames(data))
 # there were some frequencies with bodybody in it. 
 colnames(data) <- gsub("BodyBody", "Body", colnames(data))
 
+
 # 5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
 # aggregate function needed.
-
-
+tidyData <- aggregate(. ~subject + activity, data, mean)
+tidyData <- tidyData[order(tidyData$subject, tidyData$activity), ]
+write.table(tidyData, file="tidyData.txt")
 
 
