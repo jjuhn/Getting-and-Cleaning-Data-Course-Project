@@ -128,4 +128,3 @@ tidyData <- aggregate(. ~subject + activity, data, mean)
 tidyData <- tidyData[order(tidyData$subject, tidyData$activity), ]
 write.table(tidyData, file="tidyData.txt")
 
-
